@@ -39,6 +39,18 @@ jobs:
           build-tools: '33.0.2'
           sdk-root: ${{ env.ANDROID_SDK_ROOT }}
 
+      - name: Accept Android SDK licenses
+        shell: bash
+        run: |
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}"
+          if [ -x "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="${ANDROID_SDK_ROOT}"
+          else
+            echo "sdkmanager not found at expected path"
+            ls -R "${ANDROID_SDK_ROOT}" || true
+            exit 1
+          fi
+
       - name: Generate Android project
         run: bash scripts/setup-android.sh
         env:
@@ -57,3 +69,4 @@ jobs:
         with:
           name: release-apk
           path: android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
