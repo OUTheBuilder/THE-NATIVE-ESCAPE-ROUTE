@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-        # NOTE: removed `cache: npm` because no lockfile is present.
-        # If you add package-lock.json, you can re-add cache: 'npm' here.
 
       - name: Install dependencies
         run: npm install
@@ -45,9 +43,6 @@ jobs:
           accept-android-sdk-licenses: true
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-
-      # (Optional) If you prefer to keep an explicit license step, you can keep it,
-      # but the accept-android-sdk-licenses input above will already accept them.
 
       - name: Generate Android project
         run: bash scripts/setup-android.sh
