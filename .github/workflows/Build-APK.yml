@@ -16,7 +16,6 @@ jobs:
 
       - uses: android-actions/setup-android@v3
         with:
-          # Install the current, valid SDK packages by explicit package names
           packages: |
             platform-tools
             cmdline-tools;latest
