@@ -28,6 +28,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+        # NOTE: removed `cache: npm` because no lockfile is present.
+        # If you add package-lock.json, you can re-add cache: 'npm' here.
 
       - name: Install dependencies
         run: npm install
@@ -35,21 +37,17 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 33
-          build-tools: '33.0.2'
-          sdk-root: ${{ env.ANDROID_SDK_ROOT }}
+          cmdline-tools-version: 'latest'
+          packages: |
+            platform-tools
+            platforms;android-33
+            build-tools;33.0.2
+          accept-android-sdk-licenses: true
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
-      - name: Accept Android SDK licenses
-        shell: bash
-        run: |
-          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}"
-          if [ -x "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" ]; then
-            yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="${ANDROID_SDK_ROOT}"
-          else
-            echo "sdkmanager not found at expected path"
-            ls -R "${ANDROID_SDK_ROOT}" || true
-            exit 1
-          fi
+      # (Optional) If you prefer to keep an explicit license step, you can keep it,
+      # but the accept-android-sdk-licenses input above will already accept them.
 
       - name: Generate Android project
         run: bash scripts/setup-android.sh
