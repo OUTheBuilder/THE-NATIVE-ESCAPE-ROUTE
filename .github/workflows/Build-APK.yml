@@ -11,17 +11,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: 17 }
 
       - uses: android-actions/setup-android@v3
         with:
-          api-level: 33
-          build-tools: 33.0.2
-          components: |
+          # Install the current, valid SDK packages by explicit package names
+          packages: |
             platform-tools
             cmdline-tools;latest
-            platform;android-33
+            build-tools;33.0.2
+            platforms;android-33
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: true
 
       - name: Restore keystore (if provided)
         env:
