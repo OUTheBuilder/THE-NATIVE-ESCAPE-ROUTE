@@ -22,12 +22,6 @@ jobs:
             platform-tools
             platforms;android-33
             build-tools;33.0.2
-          # If you must install cmdline-tools explicitly, pin a version instead of "latest":
-          # components: |
-          #   platform-tools
-          #   platforms;android-33
-          #   build-tools;33.0.2
-          #   cmdline-tools;9.0
 
       - name: Restore keystore (if provided)
         env:
