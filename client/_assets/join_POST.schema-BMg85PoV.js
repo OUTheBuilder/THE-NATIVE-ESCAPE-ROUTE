@@ -1,0 +1,1 @@
+import{a as e}from"./index-DNJc6yMG.js";import{o as r,s as t}from"./vendor-CYxKxS8R.js";const p=r({code:t().trim().toUpperCase().regex(/^[A-Z0-9]{4,8}$/,"Room codes are 5 letters/numbers.")}),i=(o,s)=>e("rooms/join",p.parse(o),s);export{i as p};
