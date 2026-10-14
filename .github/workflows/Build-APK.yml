@@ -1,26 +1,59 @@
-  - name: Set up JDK 17
-    uses: actions/setup-java@v4
-    with:
-      distribution: 'temurin'
-      java-version: '17'
+name: Build APK
 
-  - name: Cache Gradle
-    uses: actions/cache@v4
-    with:
-      path: |
-        ~/.gradle/caches
-        ~/.gradle/wrapper
-      key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-  - name: Set up Android SDK
-    uses: android-actions/setup-android@v3
-    with:
-      api-level: '33'
-      build-tools: '33.0.2'
-      # ...your other inputs
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
 
-  - name: Accept Android SDK licenses
-    run: sdkmanager --licenses --sdk_root=$ANDROID_SDK_ROOT
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Build
-    run: ./gradlew assembleRelease
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 33
+          build-tools: '33.0.2'
+          sdk-root: ${{ env.ANDROID_SDK_ROOT }}
+
+      - name: Accept Android SDK licenses
+        run: |
+          # Ensure sdkmanager uses the SDK root we just configured and runs under JDK 17
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}"
+          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="${ANDROID_SDK_ROOT}"
+        shell: bash
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease --stacktrace
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+
+      - name: Upload release APK (optional)
+        if: success() && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: app/build/outputs/apk/release/*.apk
