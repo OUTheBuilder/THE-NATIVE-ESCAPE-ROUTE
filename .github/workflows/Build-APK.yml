@@ -23,14 +23,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.android/build-cache
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -39,21 +39,21 @@ jobs:
           build-tools: '33.0.2'
           sdk-root: ${{ env.ANDROID_SDK_ROOT }}
 
-      - name: Accept Android SDK licenses
-        run: |
-          # Ensure sdkmanager uses the SDK root we just configured and runs under JDK 17
-          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT}"
-          yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="${ANDROID_SDK_ROOT}"
-        shell: bash
-
-      - name: Build release APK
-        run: ./gradlew assembleRelease --stacktrace
+      - name: Generate Android project
+        run: bash scripts/setup-android.sh
         env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
-      - name: Upload release APK (optional)
-        if: success() && always()
+      - name: Build release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
